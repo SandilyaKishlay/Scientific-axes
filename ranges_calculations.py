@@ -1,95 +1,248 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-
-class AxisRange:
-    def __init__(self, start, stop, num=50, transform='linear'):
+class Range:
+    """
+    Class to define a range for an axis with support for linear and non-linear transformations.
+    """
+    def __init__(self, start, stop, transform_func=None):
         self.start = start
         self.stop = stop
-        self.num = num
-        self.transform = transform
-     
-        if self.transform == 'linear':
-            self.axis_values = np.linspace(self.start, self.stop, self.num)
-        elif self.transform == 'log':
-            self.axis_values = np.logspace(np.log10(self.start), np.log10(self.stop), self.num)
-        elif self.transform == 'polar':
-            theta = np.linspace(0, 2*np.pi, self.num)
-            r = np.linspace(self.start, self.stop, self.num)
-            self.axis_values = np.vstack((r*np.cos(theta), r*np.sin(theta)))
-        elif self.transform == 'hyperbolic':
-            self.axis_values = np.linspace(self.start, self.stop, self.num)
-            self.axis_values = 1 / self.axis_values
+        self.transform_func = transform_func
 
-    def __repr__(self):
-        return f"AxisRange(start={self.start}, stop={self.stop}, num={self.num}, transform='{self.transform}')"
+    def transform(self, value):
+        """
+        Applies the transform function to the given value, if it exists.
+        """
+        if self.transform_func is not None:
+            return self.transform_func(value)
+        else:
+            return value
 
-class Axis2D:
-    def __init__(self, x_range, y_range, color='black', width=1, xlabel=None, ylabel=None, title=None):
-        self.x_range = x_range
-        self.y_range = y_range
+
+class LinearRange(Range):
+    """
+    Class to define a linear range for an axis.
+    """
+    def __init__(self, start, stop):
+        super().__init__(start, stop, None)
+
+
+class LogRange(Range):
+    """
+    Class to define a log range for an axis.
+    """
+    def __init__(self, start, stop, base=10):
+        super().__init__(start, stop, lambda x: np.log(x) / np.log(base))
+
+
+class PolarRange(Range):
+    """
+    Class to define a polar range for an axis.
+    """
+    def __init__(self, start, stop):
+        super().__init__(start, stop, lambda x: np.radians(x))
+
+
+class HyperbolicRange(Range):
+    """
+    Class to define a hyperbolic range for an axis.
+    """
+    def __init__(self, start, stop):
+        super().__init__(start, stop, lambda x: np.arcsinh(x))
+
+
+class Axis:
+    """
+    Class to define an axis with customizable appearance and labeling.
+    """
+    def __init__(self, range_, color='black', width=1, tick_length=0.02, tick_width=0.005, label=None, label_offset=0.1):
+        self.range = range_
         self.color = color
         self.width = width
-        self.xlabel = xlabel
-        self.ylabel = ylabel
-        self.title = title
-    
-    def display(self):
-        fig, ax = plt.subplots()
-        ax.plot(self.x_range.axis_values, np.zeros_like(self.x_range.axis_values), color=self.color, linewidth=self.width)
-        ax.plot(np.zeros_like(self.y_range.axis_values), self.y_range.axis_values, color=self.color, linewidth=self.width)
-        
-        if self.xlabel is not None:
-            ax.set_xlabel(self.xlabel)
-        if self.ylabel is not None:
-            ax.set_ylabel(self.ylabel)
-        if self.title is not None:
-            ax.set_title(self.title)
-    
-        plt.show()
-        
-class Axis3D:
-    def __init__(self, x_range, y_range, z_range, color='black', width=1, xlabel=None, ylabel=None, zlabel=None, title=None):
-        self.x_range = x_range
-        self.y_range = y_range
-        self.z_range = z_range
+        self.tick_length = tick_length
+        self.tick_width = tick_width
+        self.label = label
+        self.label_offset = label_offset
+
+    def get_ticks(self):
+        """
+        Calculates the tick positions and labels for the axis based on its range.
+        """
+        # Calculate the tick positions
+        num_ticks = 5
+        tick_values = np.linspace(self.range.start, self.range.stop, num_ticks)
+        tick_values_transformed = self.range.transform(tick_values)
+
+        # Calculate the tick labels
+        tick_labels = ["{:.2f}".format(tick) for tick in tick_values]
+
+        return tick_values_transformed, tick_labels
+
+
+class LinearAxis(Axis):
+    """
+    Class to define a linear axis.
+    """
+    def __init__(self, start, stop, color='black', width=1, tick_length=0.02, tick_width=0.005, label=None, label_offset=0.1):
+        range_ = LinearRange(start, stop)
+        super().__init__(range_, color, width, tick_length, tick_width, label, label_offset)
+
+
+class LogAxis(Axis):
+    """
+    Class to define a log axis.
+    """
+    def __init__(self, start, stop, base=10, color='black', width=1, tick_length=0.02, tick_width=0.005, label=None, label_offset=0.1):
+        range_ = LogRange(start, stop, base)
+        super().__init__(range_, color, width, tick_length, tick_width, label, label_offset)
+
+
+class PolarAxis(Axis):
+    """
+         Class to define a polar axis.
+    """
+    def __init__(self, start, stop, color='black', width=1, tick_length=0.02, tick_width=0.005, label=None, label_offset=0.1):
+        range_ = PolarRange(start, stop)
+        super().__init__(range_, color, width, tick_length, tick_width, label, label_offset)
+
+
+class HyperbolicAxis(Axis):
+    """
+    Class to define a hyperbolic axis.
+    """
+    def __init__(self, start, stop, color='black', width=1, tick_length=0.02, tick_width=0.005, label=None, label_offset=0.1):
+        range_ = HyperbolicRange(start, stop)
+        super().__init__(range_, color, width, tick_length, tick_width, label, label_offset)
+
+
+class Grid:
+    """
+    Class to define a grid for a set of 2D or 3D axes.
+    """
+    def __init__(self, x_axis, y_axis, z_axis=None, show_shadows=False, show_perpendiculars=False, shadow_color='gray', perpendicular_color='gray'):
+        self.x_axis = x_axis
+        self.y_axis = y_axis
+        self.z_axis = z_axis
+        self.show_shadows = show_shadows
+        self.show_perpendiculars = show_perpendiculars
+        self.shadow_color = shadow_color
+        self.perpendicular_color = perpendicular_color
+
+    def get_ticks(self):
+        """
+        Calculates the tick positions and labels for each axis in the grid.
+        """
+        ticks = []
+
+        # Calculate the ticks for the x-axis
+        x_tick_values_transformed, x_tick_labels = self.x_axis.get_ticks()
+        ticks.append((x_tick_values_transformed, x_tick_labels))
+
+        # Calculate the ticks for the y-axis
+        y_tick_values_transformed, y_tick_labels = self.y_axis.get_ticks()
+        ticks.append((y_tick_values_transformed, y_tick_labels))
+
+        # Calculate the ticks for the z-axis, if it exists
+        if self.z_axis is not None:
+            z_tick_values_transformed, z_tick_labels = self.z_axis.get_ticks()
+            ticks.append((z_tick_values_transformed, z_tick_labels))
+
+        return ticks
+
+
+class Actor:
+    """
+    Base class to define an actor with customizable appearance and data to be plotted.
+    """
+    def __init__(self, color='black', size=1, label=None):
         self.color = color
-        self.width = width
-        self.xlabel = xlabel
-        self.ylabel = ylabel
-        self.zlabel = zlabel
-        self.title = title
+        self.size = size
+        self.label = label
 
-    def display(self):
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        ax.plot(self.x_range.axis_values, np.zeros_like(self.x_range.axis_values), np.zeros_like(self.x_range.axis_values), color=self.color, linewidth=self.width)
-        ax.plot(np.zeros_like(self.y_range.axis_values), self.y_range.axis_values, np.zeros_like(self.y_range.axis_values), color=self.color, linewidth=self.width)
-        ax.plot(np.zeros_like(self.z_range.axis_values), np.zeros_like(self.z_range.axis_values), self.z_range.axis_values, color=self.color, linewidth=self.width)
-    
-        if self.xlabel is not None:
-            ax.set_xlabel(self.xlabel)
-        if self.ylabel is not None:
-            ax.set_ylabel(self.ylabel)
-        if self.zlabel is not None:
-            ax.set_zlabel(self.zlabel)
-        if self.title is not None:
-            ax.set_title(self.title)
-    
+    def plot(self, ax):
+        """
+        Plots the data for the actor on the given axes.
+        """
+        pass
+
+
+class Scatter(Actor):
+    """
+    Class to define a scatter plot actor.
+    """
+    def __init__(self, x, y, z=None, color='black', size=1, label=None):
+        super().__init__(color, size, label)
+        self.x = x
+        self.y = y
+        self.z = z
+
+    def plot(self, ax):
+        """
+        Plots the scatter data on the given axes.
+        """
+        if self.z is None:
+            ax.scatter(self.x, self.y, c=self.color, s=self.size, label=self.label)
+        else:
+            ax.scatter(self.x, self.y, self.z, c=self.color, s=self.size, label=self.label)
+
+
+class Line(Actor):
+    """
+    Class to define a line plot actor.
+    """
+    def __init__(self, x, y, z=None, color='black', width=1, label=None):
+                    super().__init__(color, width, label)
+        self.x = x
+        self.y = y
+        self.z = z
+
+    def plot(self, ax):
+        """
+        Plots the line data on the given axes.
+        """
+        if self.z is None:
+            ax.plot(self.x, self.y, c=self.color, lw=self.width, label=self.label)
+        else:
+            ax.plot(self.x, self.y, self.z, c=self.color, lw=self.width, label=self.label)
+
+
+class Surface(Actor):
+    """
+    Class to define a surface plot actor.
+    """
+    def __init__(self, x, y, z, color='viridis', label=None):
+        super().__init__(None, None, label)
+        self.x = x
+        self.y = y
+        self.z = z
+        self.color = color
+
+    def plot(self, ax):
+        """
+        Plots the surface data on the given axes.
+        """
+        ax.plot_surface(self.x, self.y, self.z, cmap=self.color, linewidth=0, antialiased=True, label=self.label)
+
+
+class Legend:
+    """
+    Class to define a legend for actors on a grid.
+    """
+    def __init__(self, actors, location='best'):
+        self.actors = actors
+        self.location = location
+
+    def show(self):
+        """
+        Shows the legend on the grid.
+        """
+        handles = []
+        labels = []
+
+        for actor in self.actors:
+            handle = matplotlib.lines.Line2D([], [], c=actor.color, lw=actor.width, marker='o' if isinstance(actor, Scatter) else None, label=actor.label)
+            handles.append(handle)
+            labels.append(actor.label)
+
+        plt.legend(handles=handles, labels=labels, loc=self.location)
         plt.show()
-        
-       
-# Create an x-axis with a linear range from 0 to 10 with 50 steps
-x_range = AxisRange(0, 10, num=50, transform='linear')
 
-# Create a y-axis with a logarithmic range from 0.1 to 100 with 50 steps
-y_range = AxisRange(0.1, 100, num=50, transform='log')
 
-# Create a 2D axis with the x and y ranges, with labels and a title
-axis_2d = Axis2D(x_range, y_range, xlabel='x-axis', ylabel='y-axis', title='2D Axis')
-
-# Display the 2D axis
-axis_2d.display()
-
-# Create a z-axis with a hyperbolic range from 0.1 to 10 with 50 steps
-z_range = AxisRange(0.1, 10, num=50, transform='hyperbolic')

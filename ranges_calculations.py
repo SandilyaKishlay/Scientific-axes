@@ -49,7 +49,7 @@ class Axis2D:
         plt.show()
         
 class Axis3D:
-    def init(self, x_range, y_range, z_range, color='black', width=1, xlabel=None, ylabel=None, zlabel=None, title=None):
+    def __init__(self, x_range, y_range, z_range, color='black', width=1, xlabel=None, ylabel=None, zlabel=None, title=None):
         self.x_range = x_range
         self.y_range = y_range
         self.z_range = z_range

@@ -30,6 +30,6 @@ ax.tick_params(axis='both', labelsize=12, colors='black')  # Set tick labels fon
 ax.xaxis.pane.fill = False  # Remove x-axis background color
 ax.yaxis.pane.fill = False  # Remove y-axis background color
 ax.zaxis.pane.fill = False  # Remove z-axis background color
-ax.w_xaxis.line.set_lw(2)  # Set x-axis border width
-ax.w_yaxis.line.set_lw(2)  # Set y-axis border width
-ax.w_zaxis.line.set_lw(2)  # Set z-axis border width
+ax.xaxis.line.set_lw(2)  # Set x-axis border width
+ax.yaxis.line.set_lw(2)  # Set y-axis border width
+ax.zaxis.line.set_lw(2)  # Set z-axis border width

@@ -77,3 +77,19 @@ class Axis3D:
             ax.set_title(self.title)
     
         plt.show()
+        
+       
+# Create an x-axis with a linear range from 0 to 10 with 50 steps
+x_range = AxisRange(0, 10, num=50, transform='linear')
+
+# Create a y-axis with a logarithmic range from 0.1 to 100 with 50 steps
+y_range = AxisRange(0.1, 100, num=50, transform='log')
+
+# Create a 2D axis with the x and y ranges, with labels and a title
+axis_2d = Axis2D(x_range, y_range, xlabel='x-axis', ylabel='y-axis', title='2D Axis')
+
+# Display the 2D axis
+axis_2d.display()
+
+# Create a z-axis with a hyperbolic range from 0.1 to 10 with 50 steps
+z_range = AxisRange(0.1, 10, num=50, transform='hyperbolic')

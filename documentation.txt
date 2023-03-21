@@ -1,0 +1,33 @@
+$ First of all I initialize an AxisRange object with the given start and stop values, the number of steps between them, and
+  the type of transformation to apply to the values along the axis.
+
+$ Arguments I give in that init methods are:-
+	- start (float): the starting value of the axis range
+        - stop (float): the ending value of the axis range
+        - num (int, optional): the number of steps between start and stop (default=50)
+        - transform (str, optional): the type of transformation to apply to the values along the axis
+          (default='linear'). Available options are: 'linear', 'log', 'polar', 'hyperbolic'.
+$ In that method I use logic to calculate the axis value based on the given trasnformation type.
+$ After that I had created Magical method for the output.
+$ Initialize an Axis2D object with the given x and y AxisRange objects, and additional display settings.
+$ Arguments I give in that init methods are:-
+      	- x_range (AxisRange): an AxisRange object representing the x-axis range
+        - y_range (AxisRange): an AxisRange object representing the y-axis range
+        - color (str, optional): the color of the axis lines (default='black')
+        - width (float, optional): the width of the axis lines (default=1)
+        - xlabel (str, optional): the label for the x-axis (default=None)
+        - ylabel (str, optional): the label for the y-axis (default=None)
+        - title (str, optional): the title for the axis (default=None)
+$ Then I define a display method to display the 2D axis using matplotlib
+$ Then I initialize an Axis3D object with the given x, y, and z AxisRange objects, and additional display settings.
+$ Arguments I give in that init methods are:-
+    	    - x_range (AxisRange): an AxisRange object representing the x-axis range
+            - y_range (AxisRange): an AxisRange object representing the y-axis range
+            - z_range (AxisRange): an AxisRange object representing the z-axis range
+            - color (str, optional): the color of the axis lines (default='black')
+            - width (float, optional): the width of the axis lines (default=1)
+            - xlabel (str, optional): the label for the x-axis (default=None)
+            - ylabel (str, optional): the label for the y-axis (default=None)
+            - zlabel (str, optional): the label for the z-axis (default=None)
+            - title (str, optional): the title for the axis (default=None)
+$Then I define a display method to display the 3D axis using metplotlib
